@@ -86,6 +86,12 @@ export default function App() {
         body: JSON.stringify({ messages: newMessages }),
       });
 
+      // Verificar si la respuesta es realmente JSON
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("El servidor no devolvió una respuesta válida (código " + response.status + ")");
+      }
+
       const data = await response.json();
 
       if (!response.ok) {
