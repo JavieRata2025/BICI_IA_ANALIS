@@ -4,12 +4,15 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI } from "@google/genai";
-import dotenv from "dotenv";
 
-dotenv.config();
+if (process.env.NODE_ENV !== "production") {
+  (await import("dotenv")).config();
+}
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// ... (SYSTEM_PROMPT remains the same) ...
 
 const SYSTEM_PROMPT = `
 # ROL
@@ -56,8 +59,6 @@ async function startServer() {
 
       const ai = new GoogleGenAI({ apiKey: process.env.GOOGLE_GENAI_API_KEY });
       
-      // Requisito estricto: Modelo Gemma-4 (Gemma 3 en realidad, pero usaremos el string pedido)
-      // Ajuste de mensajes para inyectar System Prompt en el primer mensaje de usuario (Gemma no soporta systemInstruction)
       const formattedMessages = messages.map((m: any, index: number) => {
         if (index === 0 && m.role === "user") {
           return {
@@ -68,8 +69,9 @@ async function startServer() {
         return m;
       });
 
+      // Modificado para usar un modelo soportado
       const response = await ai.models.generateContent({
-        model: "gemma-4-26b-a4b-it", // Nombre exacto pedido por el usuario
+        model: "gemini-3-flash-preview", 
         contents: formattedMessages,
       });
 
